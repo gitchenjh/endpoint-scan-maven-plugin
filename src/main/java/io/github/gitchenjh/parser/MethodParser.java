@@ -5,7 +5,12 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.util.List;
 
+import static io.github.gitchenjh.constant.Constants.API_OPERATION;
+import static io.github.gitchenjh.constant.Constants.DELETE_MAPPING;
+import static io.github.gitchenjh.constant.Constants.GET_MAPPING;
 import static io.github.gitchenjh.constant.Constants.LINE_BREAK;
+import static io.github.gitchenjh.constant.Constants.POST_MAPPING;
+import static io.github.gitchenjh.constant.Constants.PUT_MAPPING;
 import static io.github.gitchenjh.constant.Constants.REQUEST_MAPPING;
 
 /**
@@ -25,13 +30,25 @@ public class MethodParser extends AbstractParser {
         EndpointModel endpointModel = new EndpointModel();
         String[] lines = metaStr.split(LINE_BREAK);
         for (String line : lines) {
-            if (line.startsWith(REQUEST_MAPPING)) {
+            if (line.startsWith(REQUEST_MAPPING)
+                    || line.startsWith(GET_MAPPING) || line.startsWith(POST_MAPPING)
+                    || line.startsWith(PUT_MAPPING) || line.startsWith(DELETE_MAPPING)) {
+                logger.info("找到Endpoint：\n" + metaStr);
                 resolveMapping(line, endpointModel);
-                String desc = resolveDescription(metaStr);
-                endpointModel.setDescription(desc);
                 return endpointModel;
             }
         }
-        return null;
+        String desc = resolveDescription(metaStr);
+        endpointModel.setDescription(desc);
+        if (metaStr.contains(API_OPERATION)) {
+            endpointModel.setPath("");
+            return endpointModel;
+        } else {
+            if ("".equals(endpointModel.getPath())) {
+                return null;
+            } else {
+                return endpointModel;
+            }
+        }
     }
 }

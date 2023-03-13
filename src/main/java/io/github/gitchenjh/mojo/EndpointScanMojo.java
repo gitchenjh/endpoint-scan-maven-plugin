@@ -17,11 +17,13 @@ package io.github.gitchenjh.mojo;
  */
 
 import com.alibaba.fastjson.JSON;
+import io.github.gitchenjh.model.ControllerModel;
 import io.github.gitchenjh.model.EndpointModel;
-import io.github.gitchenjh.util.JavaControllerDealer;
+import io.github.gitchenjh.parser.SourceFileParser;
 import io.github.gitchenjh.util.SourceFileUtil;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -38,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author 高节
+ * @author 陈精华
  * @since 2023-03-11
  */
 @Mojo(name = "scan", threadSafe = true)
@@ -53,23 +55,170 @@ public class EndpointScanMojo extends AbstractMojo {
         getLog().info("开始扫描Endpoints==================================");
         String sourcePath = project.getBuild().getSourceDirectory();
         getLog().info("源码目录为：" + sourcePath);
-        List<EndpointModel> endpointList = new ArrayList<>();
-        List<File> javaList = new SourceFileUtil(getLog(), new File(sourcePath)).getJavaSourceFile();
-        for (File source : javaList){
-            endpointList.addAll(new JavaControllerDealer(getLog(), source.getAbsolutePath()).parse());
+
+        SourceFileUtil sourceFileUtil = new SourceFileUtil(getLog(), new File(sourcePath));
+        List<File> sourceFileList = sourceFileUtil.getJavaSourceFile();
+        List<ControllerModel> controllers = new ArrayList<>();
+        List<EndpointModel> endpoints = new ArrayList<>();
+
+        for (File sourceFile : sourceFileList) {
+            SourceFileParser sourceFileParser = new SourceFileParser(getLog());
+            sourceFileParser.parse(sourceFile);
+            List<ControllerModel> currentControllers = sourceFileParser.getControllerList();
+            List<EndpointModel> currentEndpoints = new ArrayList<>();
+            for (ControllerModel controllerModel : currentControllers) {
+                if (controllerModel != null && controllerModel.getEndpoints() != null) {
+                    currentEndpoints.addAll(controllerModel.getEndpoints());
+                }
+            }
+            controllers.addAll(currentControllers);
+            endpoints.addAll(currentEndpoints);
         }
-        String endpointStr = JSON.toJSONString(endpointList);
+
         getLog().info("扫描Endpoints结束==================================");
         File classesPath = new File(project.getBuild().getOutputDirectory());
         if (!classesPath.exists()) {
             classesPath.mkdirs();
         }
-        File file = new File(classesPath, "endpoints.json");
-        getLog().info("输出目录为：" + file.getAbsolutePath());
-        try (OutputStreamWriter out = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8)) {
-            out.write(endpointStr);
+        File controllersFile = new File(classesPath, "controllers.json");
+        File endpointsFile = new File(classesPath, "endpoints.json");
+        getLog().info("输出controllers文件为：" + controllersFile.getAbsolutePath());
+        getLog().info("输出endpoints文件为：" + endpointsFile.getAbsolutePath());
+        try (OutputStreamWriter controllerWriter = new OutputStreamWriter(Files.newOutputStream(controllersFile.toPath()), StandardCharsets.UTF_8)) {
+            controllerWriter.write(JSON.toJSONString(controllers));
         } catch (IOException e) {
-            throw new MojoExecutionException("Error creating file " + file, e);
+            throw new MojoExecutionException("Error creating file " + controllersFile, e);
+        }
+        try (OutputStreamWriter endpointWriter = new OutputStreamWriter(Files.newOutputStream(endpointsFile.toPath()), StandardCharsets.UTF_8)) {
+            endpointWriter.write(JSON.toJSONString(endpoints));
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error creating file " + endpointsFile, e);
+        }
+    }
+
+    public static void main(String[] args) {
+        Log logger = new Log() {
+            @Override
+            public boolean isDebugEnabled() {
+                return false;
+            }
+
+            @Override
+            public void debug(CharSequence charSequence) {
+
+            }
+
+            @Override
+            public void debug(CharSequence charSequence, Throwable throwable) {
+
+            }
+
+            @Override
+            public void debug(Throwable throwable) {
+
+            }
+
+            @Override
+            public boolean isInfoEnabled() {
+                return false;
+            }
+
+            @Override
+            public void info(CharSequence charSequence) {
+
+            }
+
+            @Override
+            public void info(CharSequence charSequence, Throwable throwable) {
+
+            }
+
+            @Override
+            public void info(Throwable throwable) {
+
+            }
+
+            @Override
+            public boolean isWarnEnabled() {
+                return false;
+            }
+
+            @Override
+            public void warn(CharSequence charSequence) {
+
+            }
+
+            @Override
+            public void warn(CharSequence charSequence, Throwable throwable) {
+
+            }
+
+            @Override
+            public void warn(Throwable throwable) {
+
+            }
+
+            @Override
+            public boolean isErrorEnabled() {
+                return false;
+            }
+
+            @Override
+            public void error(CharSequence charSequence) {
+
+            }
+
+            @Override
+            public void error(CharSequence charSequence, Throwable throwable) {
+
+            }
+
+            @Override
+            public void error(Throwable throwable) {
+
+            }
+        };
+        logger.info("开始扫描Endpoints==================================");
+        String sourcePath = "D:\\workspace\\xxxx-project\\src\\main\\java";
+        logger.info("源码目录为：" + sourcePath);
+
+        SourceFileUtil sourceFileUtil = new SourceFileUtil(logger, new File(sourcePath));
+        List<File> sourceFileList = sourceFileUtil.getJavaSourceFile();
+        List<ControllerModel> controllers = new ArrayList<>();
+        List<EndpointModel> endpoints = new ArrayList<>();
+
+        for (File sourceFile : sourceFileList) {
+            SourceFileParser sourceFileParser = new SourceFileParser(logger);
+            sourceFileParser.parse(sourceFile);
+            List<ControllerModel> currentControllers = sourceFileParser.getControllerList();
+            List<EndpointModel> currentEndpoints = new ArrayList<>();
+            for (ControllerModel controllerModel : currentControllers) {
+                if (controllerModel != null && controllerModel.getEndpoints() != null) {
+                    currentEndpoints.addAll(controllerModel.getEndpoints());
+                }
+            }
+            controllers.addAll(currentControllers);
+            endpoints.addAll(currentEndpoints);
+        }
+
+        logger.info("扫描Endpoints结束==================================");
+        File classesPath = new File("D:\\workspace\\xxxx-project\\target\\classes");
+        if (!classesPath.exists()) {
+            classesPath.mkdirs();
+        }
+        File controllersFile = new File(classesPath, "controllers.json");
+        File endpointsFile = new File(classesPath, "endpoints.json");
+        logger.info("输出controllers文件为：" + controllersFile.getAbsolutePath());
+        logger.info("输出endpoints文件为：" + endpointsFile.getAbsolutePath());
+        try (OutputStreamWriter controllerWriter = new OutputStreamWriter(Files.newOutputStream(controllersFile.toPath()), StandardCharsets.UTF_8)) {
+            controllerWriter.write(JSON.toJSONString(controllers));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (OutputStreamWriter endpointWriter = new OutputStreamWriter(Files.newOutputStream(endpointsFile.toPath()), StandardCharsets.UTF_8)) {
+            endpointWriter.write(JSON.toJSONString(endpoints));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -22,17 +22,17 @@ public class ControllerParser extends AbstractParser {
 
     @Override
     public ControllerModel parse(String metaStr, String clazz, List<String> imports) {
+        logger.info("找到Controller：\n" + metaStr);
         ControllerModel controllerModel = new ControllerModel();
         String[] lines = metaStr.split(LINE_BREAK);
         for (String line : lines) {
             if (line.startsWith(REQUEST_MAPPING)) {
                 resolveMapping(line, controllerModel);
-                String desc = resolveDescription(metaStr);
-                controllerModel.setClazz(clazz);
-                controllerModel.setDescription(desc);
-                return controllerModel;
             }
         }
-        return null;
+        String desc = resolveDescription(metaStr);
+        controllerModel.setClazz(clazz);
+        controllerModel.setDescription(desc);
+        return controllerModel;
     }
 }

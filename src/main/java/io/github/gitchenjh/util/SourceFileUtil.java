@@ -33,12 +33,12 @@ public class SourceFileUtil {
     public void scanJavaSourceFile(File file, List<File> list){
         if (!file.isDirectory()) {
             String fileName = file.getName();
-            if (fileName.endsWith(DOT_JAVA) && fileName.contains(CONTROLLER)) {
+            if (fileName.endsWith(DOT_JAVA)) {
                 logger.info("扫描到java文件：" + file.getAbsolutePath());
                 list.add(file);
             }
         } else {
-            File[] subList =  file.listFiles();
+            File[] subList = file.listFiles();
             if (Objects.isNull(subList) || subList.length == 0) {
                 return;
             }

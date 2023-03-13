@@ -18,7 +18,8 @@ import static io.github.gitchenjh.constant.Constants.METHOD_STR;
 import static io.github.gitchenjh.constant.Constants.PATH_STR;
 import static io.github.gitchenjh.constant.Constants.POST_MAPPING;
 import static io.github.gitchenjh.constant.Constants.PUT_MAPPING;
-import static io.github.gitchenjh.constant.Constants.TAG_STR;
+import static io.github.gitchenjh.constant.Constants.SPECIAL_SYMBOLS;
+import static io.github.gitchenjh.constant.Constants.TAGS_STR;
 import static io.github.gitchenjh.constant.Constants.VALUE_STR;
 
 /**
@@ -30,32 +31,38 @@ public abstract class AbstractParser {
     public abstract RequestMappingModel parse(String metaStr, String clazz, List<String> imports);
 
     protected void resolveMapping(String str, RequestMappingModel requestMappingModel) {
-        if (str.startsWith(GET_MAPPING)) {
-            requestMappingModel.setHttpMethod(HTTP_METHOD_GET);
-        } else if (str.startsWith(POST_MAPPING)) {
-            requestMappingModel.setHttpMethod(HTTP_METHOD_POST);
-        } else if (str.startsWith(PUT_MAPPING)) {
-            requestMappingModel.setHttpMethod(HTTP_METHOD_PUT);
-        } else if (str.startsWith(DELETE_MAPPING)) {
-            requestMappingModel.setHttpMethod(HTTP_METHOD_DELETE);
-        }
+        String requestMapping = "";
+        String requestMethod = "";
         if (!str.contains("(") || str.indexOf(")") - str.indexOf("(") <= 3) {
-            requestMappingModel.setPath("/");
+            requestMapping = "/";
+        } else {
+            String requestMappingParamValues = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
+            requestMapping = getAnnotationParamValue(requestMappingParamValues, VALUE_STR, true);
+            if (requestMapping == null) {
+                requestMapping = getAnnotationParamValue(requestMappingParamValues, PATH_STR, true);
+            }
+            if (requestMapping == null) {
+                requestMapping = "";
+            }
+            requestMethod = getAnnotationParamValue(requestMappingParamValues, METHOD_STR, false);
+            if (requestMethod == null) {
+                requestMethod = "";
+            }
+            if (requestMethod.contains(".")) {
+                requestMethod = requestMethod.split("\\.")[1];
+            }
+            if (str.startsWith(GET_MAPPING)) {
+                requestMethod = HTTP_METHOD_GET;
+            } else if (str.startsWith(POST_MAPPING)) {
+                requestMethod = HTTP_METHOD_POST;
+            } else if (str.startsWith(PUT_MAPPING)) {
+                requestMethod = HTTP_METHOD_PUT;
+            } else if (str.startsWith(DELETE_MAPPING)) {
+                requestMethod =HTTP_METHOD_DELETE;
+            }
         }
-        String requestMappingParamValues = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
-        String requestMapping = getAnnotationParamValue(requestMappingParamValues, VALUE_STR, true);
-        if (requestMapping == null) {
-            requestMapping = getAnnotationParamValue(requestMappingParamValues, PATH_STR, true);
-        }
-        if (requestMapping == null) {
-            requestMapping = "";
-        }
-        String requestMethod = getAnnotationParamValue(requestMappingParamValues, METHOD_STR, false);
-        if (requestMethod == null) {
-            requestMethod = "";
-        }
-        if (requestMethod.contains(".")) {
-            requestMethod = requestMethod.split("\\.")[1];
+        if (!requestMapping.startsWith("/")) {
+            requestMapping = "/" + requestMapping;
         }
         requestMappingModel.setPath(requestMapping);
         requestMappingModel.setHttpMethod(requestMethod);
@@ -71,9 +78,12 @@ public abstract class AbstractParser {
             if (line.startsWith(API) || line.startsWith(API_OPERATION)) {
                 if (line.indexOf("(") > 0 && line.indexOf(")") - line.indexOf("(") > 3) {
                     String descParamValues = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
-                    String descValue = getAnnotationParamValue(descParamValues, VALUE_STR, true);
-                    if (descValue == null) {
-                        descValue = getAnnotationParamValue(descParamValues, TAG_STR, true);
+                    String descValue = getAnnotationParamValue(descParamValues, VALUE_STR, false);
+                    String descTagValue = getAnnotationParamValue(descParamValues, TAGS_STR, false);
+                    if (descValue == null && descTagValue == null) {
+                        descValue = getAnnotationParamValue(descParamValues, VALUE_STR, true);
+                    } else {
+                        return descValue != null ? descValue : descTagValue;
                     }
                     if (descValue != null) {
                         return descValue;
@@ -90,23 +100,31 @@ public abstract class AbstractParser {
     private String getAnnotationParamValue(String source, String param, Boolean getDefaultParamValue) {
         Map<String, String> paramMap = new HashMap<>();
         source = source.replaceAll("\\s*","")
+                .replaceAll("\",","\"" + SPECIAL_SYMBOLS)
                 .replaceAll("\"","");
-        if (source.contains(",")) {
-            String[] paramValues = source.split(",");
+
+        if (source.contains(SPECIAL_SYMBOLS)) {
+            String[] paramValues = source.split(SPECIAL_SYMBOLS);
             for(String paramValue : paramValues){
                 String[] kv = paramValue.split("=");
-                paramMap.put(kv[0], kv[1]);
+                if (kv.length >= 2) {
+                    paramMap.put(kv[0], kv[1]);
+                }
             }
         } else if (source.contains("=")) {
             String[] kv = source.split("=");
-            paramMap.put(kv[0], kv[1]);
-        } else {
-            if (getDefaultParamValue) {
-                return source;
-            } else {
-                return null;
+            if (kv.length >= 2) {
+                paramMap.put(kv[0], kv[1]);
             }
         }
-        return paramMap.get(param);
+        String value = paramMap.get(param);
+        if (value != null) {
+            return value;
+        }
+        if (getDefaultParamValue) {
+            return source;
+        } else {
+            return null;
+        }
     }
 }

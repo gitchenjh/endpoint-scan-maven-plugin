@@ -6,7 +6,7 @@ package io.github.gitchenjh.model;
  */
 public class RequestMappingModel {
 
-    private String path;
+    private String path = "";
 
     private String httpMethod;
 

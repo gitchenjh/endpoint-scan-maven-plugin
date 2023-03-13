@@ -34,14 +34,9 @@ public class SourceFileParser {
     private final ClassParser classParser;
 
     private List<ControllerModel> controllerList = new CopyOnWriteArrayList<>();
-    private List<EndpointModel> endpointList = new CopyOnWriteArrayList<>();
 
     public List<ControllerModel> getControllerList() {
         return controllerList;
-    }
-
-    public List<EndpointModel> getEndpointList() {
-        return endpointList;
     }
 
     public SourceFileParser(Log logger) {
@@ -53,28 +48,27 @@ public class SourceFileParser {
 
     public void parse(File file) {
         controllerList = new CopyOnWriteArrayList<>();
-        endpointList = new CopyOnWriteArrayList<>();
+        List<EndpointModel> endpointList = new CopyOnWriteArrayList<>();
         String pkg = "";
         String clazz = "";
         List<String> imports = new ArrayList<>();
-        boolean isHead = true;
+        boolean gotHead = false;
+        boolean gotClazz = false;
         StringBuffer stringBuffer = new StringBuffer();
         Stack<String> stack = new Stack<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line = null;
+            String line;
             ControllerModel currentController = null;
             EndpointModel currentEndpoint = null;
-            List<ControllerModel> controllerList = new ArrayList<>();
-            List<EndpointModel> endpointList = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 line = StringUtils.trim(line);
                 if ("".equals(line)) {
                     continue;
                 }
-                if (isHead && !line.startsWith(IMPORT) && !line.startsWith(PACKAGE)) {
-                    isHead = false;
+                if (!gotHead && !line.startsWith(IMPORT) && !line.startsWith(PACKAGE)) {
+                    gotHead = true;
                 }
-                if (isHead) {
+                if (!gotHead) {
                     String[] words = line.split(" ");
                     if (PACKAGE.equals(words[0]) && words.length == 2) {
                         pkg = words[1].endsWith(";") ? words[1].substring(0, words[1].length() - 1) : words[1];
@@ -85,26 +79,36 @@ public class SourceFileParser {
                     }
                 } else {
                     stringBuffer.append(line).append(LINE_BREAK);
-                    if (line.startsWith("@")
-                            || line.startsWith("/**")
-                            || line.startsWith("*")) {
-                        continue;
-                    }
-                    if (line.startsWith("public class ")) {
-                        clazz = line.substring("public class ".length(), line.length());
+                    if (!gotClazz && line.startsWith("public class ")) {
+                        clazz = line.substring("public class ".length());
                         if (clazz.endsWith("{")) {
                             clazz = clazz.substring(0, clazz.length() - 1);
                         }
                         clazz = StringUtils.trim(clazz);
+                        clazz = clazz.split(" ")[0];
+                        gotClazz = true;
                     }
+                    if ((line.startsWith("@") && !line.endsWith("{")) || line.startsWith("/**") || line.startsWith("//") || line.startsWith("*")
+                            // 排除 lambda 语法
+                            || line.matches("\\(+\\{+") || line.matches("\\}+\\)")) {
+                        continue;
+                    }
+                    if ((line.contains("{") && !line.matches(Constants.OPEN_BRACE_ESCAPE)) || (line.contains("}") && !line.matches(Constants.CLOSE_BRACE_ESCAPE))) {
+                        // TODO 待优化 一行中有 {***} 或 } *** { 的情况
+                        continue;
+                    }
+
                     if (line.contains("{") && !line.matches(Constants.OPEN_BRACE_ESCAPE)) {
                         if (stack.empty()) {
-                            currentController = classParser.parse(stringBuffer.toString(), pkg + "." + clazz, imports);
+                            ControllerModel controller = classParser.parse(stringBuffer.toString(), pkg + "." + clazz, imports);
+                            if (controller != null) {
+                                currentController = controller;
+                            }
                         } else {
                             currentEndpoint = methodParser.parse(stringBuffer.toString(), pkg + "." + clazz, imports);
                         }
+                        stack.push(stringBuffer.toString());
                         stringBuffer = new StringBuffer();
-                        stringBuffer.append(line);
                     }
                     if (line.contains("}") && !line.matches(Constants.CLOSE_BRACE_ESCAPE)) {
                         if (stack.empty()) {
@@ -115,13 +119,18 @@ public class SourceFileParser {
                             if (stack.empty()) {
                                 // 一个class code block扫描完
                                 controllerList.add(currentController);
-                                ControllerModel finalCurrentController = currentController;
-                                endpointList.forEach(endpoint -> endpoint.setPath(finalCurrentController.getPath() + endpoint.getPath()));
-                                currentController.setEndpoints(endpointList);
-                                endpointList = new ArrayList<>();
+                                for (EndpointModel endpoint : endpointList) {
+                                    endpoint.setPath(currentController.getPath() + endpoint.getPath());
+                                }
+                                if (endpointList.size() > 0) {
+                                    currentController.setEndpoints(endpointList);
+                                    endpointList = new ArrayList<>();
+                                }
                             } else {
                                 // 一个class code block未扫描完
-                                endpointList.add(currentEndpoint);
+                                if (currentEndpoint != null) {
+                                    endpointList.add(currentEndpoint);
+                                }
                             }
                         }
                     }

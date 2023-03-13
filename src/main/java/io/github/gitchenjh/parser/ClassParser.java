@@ -7,6 +7,8 @@ import java.util.List;
 
 import static io.github.gitchenjh.constant.Constants.CONTROLLER;
 import static io.github.gitchenjh.constant.Constants.CONTROLLER_ESCAPE;
+import static io.github.gitchenjh.constant.Constants.REQUEST_MAPPING;
+import static io.github.gitchenjh.constant.Constants.REQUEST_MAPPING_ESCAPE;
 import static io.github.gitchenjh.constant.Constants.REST_CONTROLLER;
 import static io.github.gitchenjh.constant.Constants.REST_CONTROLLER_ESCAPE;
 
@@ -29,7 +31,9 @@ public class ClassParser extends AbstractParser {
     public ControllerModel parse(String metaStr, String clazz, List<String> imports) {
         if (metaStr.contains(CONTROLLER) && !metaStr.matches(CONTROLLER_ESCAPE)) {
             return controllerParser.parse(metaStr, clazz, imports);
-        } else if (metaStr.contains(REST_CONTROLLER) && metaStr.matches(REST_CONTROLLER_ESCAPE)) {
+        } else if (metaStr.contains(REST_CONTROLLER) && !metaStr.matches(REST_CONTROLLER_ESCAPE)) {
+            return controllerParser.parse(metaStr, clazz, imports);
+        } else if (metaStr.contains(REQUEST_MAPPING) && !metaStr.matches(REQUEST_MAPPING_ESCAPE)) {
             return controllerParser.parse(metaStr, clazz, imports);
         }
         return null;
