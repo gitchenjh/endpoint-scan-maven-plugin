@@ -1,7 +1,7 @@
 package io.github.gitchenjh.model;
 
 /**
- * @author 高节
+ * @author 陈精华
  * @since 2023-03-12
  */
 public class RequestMappingModel {

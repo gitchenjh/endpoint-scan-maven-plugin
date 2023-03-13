@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author 高节
+ * @author 陈精华
  * @since 2023-03-11
  */
 public class PathDealer {

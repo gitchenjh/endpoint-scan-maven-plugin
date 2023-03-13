@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author 高节
+ * @author 陈精华
  * @since 2023-03-11
  */
 public class JavaControllerDealer {

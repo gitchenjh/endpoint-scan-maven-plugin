@@ -1,21 +1,25 @@
 package io.github.gitchenjh.model;
 
+import java.util.List;
+
 /**
- * @author 高节
+ * @author 陈精华
  * @since 2023-03-12
  */
 public class ControllerModel extends RequestMappingModel {
 
-    public String pkg;
+    public String clazz;
 
     public String description;
 
-    public String getPkg() {
-        return pkg;
+    public List<EndpointModel> endpoints;
+
+    public String getClazz() {
+        return clazz;
     }
 
-    public void setPkg(String pkg) {
-        this.pkg = pkg;
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
     }
 
     public String getDescription() {
@@ -24,5 +28,13 @@ public class ControllerModel extends RequestMappingModel {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<EndpointModel> getEndpoints() {
+        return endpoints;
+    }
+
+    public void setEndpoints(List<EndpointModel> endpoints) {
+        this.endpoints = endpoints;
     }
 }

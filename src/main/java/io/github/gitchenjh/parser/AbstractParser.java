@@ -3,8 +3,11 @@ package io.github.gitchenjh.parser;
 import io.github.gitchenjh.model.RequestMappingModel;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static io.github.gitchenjh.constant.Constants.API;
+import static io.github.gitchenjh.constant.Constants.API_OPERATION;
 import static io.github.gitchenjh.constant.Constants.DELETE_MAPPING;
 import static io.github.gitchenjh.constant.Constants.GET_MAPPING;
 import static io.github.gitchenjh.constant.Constants.HTTP_METHOD_DELETE;
@@ -15,15 +18,16 @@ import static io.github.gitchenjh.constant.Constants.METHOD_STR;
 import static io.github.gitchenjh.constant.Constants.PATH_STR;
 import static io.github.gitchenjh.constant.Constants.POST_MAPPING;
 import static io.github.gitchenjh.constant.Constants.PUT_MAPPING;
+import static io.github.gitchenjh.constant.Constants.TAG_STR;
 import static io.github.gitchenjh.constant.Constants.VALUE_STR;
 
 /**
- * @author 高节
+ * @author 陈精华
  * @since 2023-03-11
  */
 public abstract class AbstractParser {
 
-    public abstract void parse(String metaStr);
+    public abstract RequestMappingModel parse(String metaStr, String clazz, List<String> imports);
 
     protected void resolveMapping(String str, RequestMappingModel requestMappingModel) {
         if (str.startsWith(GET_MAPPING)) {
@@ -35,7 +39,7 @@ public abstract class AbstractParser {
         } else if (str.startsWith(DELETE_MAPPING)) {
             requestMappingModel.setHttpMethod(HTTP_METHOD_DELETE);
         }
-        if (str.indexOf("(") < 0 || str.indexOf(")") - str.indexOf("(") <= 3) {
+        if (!str.contains("(") || str.indexOf(")") - str.indexOf("(") <= 3) {
             requestMappingModel.setPath("/");
         }
         String requestMappingParamValues = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
@@ -58,14 +62,26 @@ public abstract class AbstractParser {
     }
 
     protected String resolveDescription(String description){
-        String[] ds = description.replace("*","")
+        String[] lines = description.replace("*","")
                 .replace("/","")
                 .split("\r|\n");
         StringBuilder result = new StringBuilder();
-        for (String d :ds) {
-            d = d.replaceAll("\\s","");
-            if (d.length()>0 && !d.startsWith("@")){
-                result.append(d);
+        for (String line :lines) {
+            line = line.replaceAll("\\s","");
+            if (line.startsWith(API) || line.startsWith(API_OPERATION)) {
+                if (line.indexOf("(") > 0 && line.indexOf(")") - line.indexOf("(") > 3) {
+                    String descParamValues = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
+                    String descValue = getAnnotationParamValue(descParamValues, VALUE_STR, true);
+                    if (descValue == null) {
+                        descValue = getAnnotationParamValue(descParamValues, TAG_STR, true);
+                    }
+                    if (descValue != null) {
+                        return descValue;
+                    }
+                }
+            }
+            if (line.length() >0 && !line.startsWith("@")){
+                result.append(line);
             }
         }
         return result.toString();

@@ -3,11 +3,13 @@ package io.github.gitchenjh.parser;
 import io.github.gitchenjh.model.ControllerModel;
 import org.apache.maven.plugin.logging.Log;
 
+import java.util.List;
+
 import static io.github.gitchenjh.constant.Constants.LINE_BREAK;
 import static io.github.gitchenjh.constant.Constants.REQUEST_MAPPING;
 
 /**
- * @author 高节
+ * @author 陈精华
  * @since 2023-03-11
  */
 public class ControllerParser extends AbstractParser {
@@ -19,15 +21,18 @@ public class ControllerParser extends AbstractParser {
     }
 
     @Override
-    public void parse(String metaStr) {
-        ControllerModel controllerParser = new ControllerModel();
+    public ControllerModel parse(String metaStr, String clazz, List<String> imports) {
+        ControllerModel controllerModel = new ControllerModel();
         String[] lines = metaStr.split(LINE_BREAK);
         for (String line : lines) {
             if (line.startsWith(REQUEST_MAPPING)) {
-                resolveMapping(line, controllerParser);
-                break;
+                resolveMapping(line, controllerModel);
+                String desc = resolveDescription(metaStr);
+                controllerModel.setClazz(clazz);
+                controllerModel.setDescription(desc);
+                return controllerModel;
             }
         }
-        // resolveDescription
+        return null;
     }
 }
