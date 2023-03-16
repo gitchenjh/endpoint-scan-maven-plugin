@@ -1,10 +1,10 @@
-package io.github.gitchenjh.model;
+package io.github.gitchenjh.endpointscanner.model;
 
 import java.util.List;
 
 /**
- * @author 陈精华
- * @since 2023-03-12
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public class ControllerModel extends RequestMappingModel {
 
@@ -36,5 +36,16 @@ public class ControllerModel extends RequestMappingModel {
 
     public void setEndpoints(List<EndpointModel> endpoints) {
         this.endpoints = endpoints;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"clazz\":\"" + clazz + "\"" +
+                ", \"path\":\"" + getPath() + "\"" +
+                ", \"httpMethod\":\"" + getHttpMethod() + "\"" +
+                ", \"description\":\"" + description + "\"" +
+                ", \"endpoints\":" + (endpoints == null ? "[]" : endpoints.toString()) +
+                "}";
     }
 }

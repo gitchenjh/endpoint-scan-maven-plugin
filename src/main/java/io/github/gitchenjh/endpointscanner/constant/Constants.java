@@ -1,8 +1,8 @@
-package io.github.gitchenjh.constant;
+package io.github.gitchenjh.endpointscanner.constant;
 
 /**
- * @author 陈精华
- * @since 2023-03-11
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public class Constants {
     public static final String OPEN_BRACE_ESCAPE = ".*\".*\\{.*\".*";

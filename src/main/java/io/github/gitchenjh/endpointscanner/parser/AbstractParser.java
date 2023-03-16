@@ -1,30 +1,30 @@
-package io.github.gitchenjh.parser;
+package io.github.gitchenjh.endpointscanner.parser;
 
-import io.github.gitchenjh.model.RequestMappingModel;
+import io.github.gitchenjh.endpointscanner.model.RequestMappingModel;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.github.gitchenjh.constant.Constants.API;
-import static io.github.gitchenjh.constant.Constants.API_OPERATION;
-import static io.github.gitchenjh.constant.Constants.DELETE_MAPPING;
-import static io.github.gitchenjh.constant.Constants.GET_MAPPING;
-import static io.github.gitchenjh.constant.Constants.HTTP_METHOD_DELETE;
-import static io.github.gitchenjh.constant.Constants.HTTP_METHOD_GET;
-import static io.github.gitchenjh.constant.Constants.HTTP_METHOD_POST;
-import static io.github.gitchenjh.constant.Constants.HTTP_METHOD_PUT;
-import static io.github.gitchenjh.constant.Constants.METHOD_STR;
-import static io.github.gitchenjh.constant.Constants.PATH_STR;
-import static io.github.gitchenjh.constant.Constants.POST_MAPPING;
-import static io.github.gitchenjh.constant.Constants.PUT_MAPPING;
-import static io.github.gitchenjh.constant.Constants.SPECIAL_SYMBOLS;
-import static io.github.gitchenjh.constant.Constants.TAGS_STR;
-import static io.github.gitchenjh.constant.Constants.VALUE_STR;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.API;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.API_OPERATION;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.DELETE_MAPPING;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.GET_MAPPING;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.HTTP_METHOD_DELETE;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.HTTP_METHOD_GET;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.HTTP_METHOD_POST;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.HTTP_METHOD_PUT;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.METHOD_STR;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.PATH_STR;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.POST_MAPPING;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.PUT_MAPPING;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.SPECIAL_SYMBOLS;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.TAGS_STR;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.VALUE_STR;
 
 /**
- * @author 陈精华
- * @since 2023-03-11
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public abstract class AbstractParser {
 
@@ -64,17 +64,23 @@ public abstract class AbstractParser {
         if (!requestMapping.startsWith("/")) {
             requestMapping = "/" + requestMapping;
         }
+        if (!requestMapping.equals("/") && requestMapping.endsWith("/")) {
+            requestMapping = requestMapping.substring(0, requestMapping.length() - 1);
+        }
         requestMappingModel.setPath(requestMapping);
         requestMappingModel.setHttpMethod(requestMethod);
     }
 
     protected String resolveDescription(String description){
-        String[] lines = description.replace("*","")
-                .replace("/","")
-                .split("\r|\n");
+        String[] lines = description.split("\r|\n");
         StringBuilder result = new StringBuilder();
         for (String line :lines) {
             line = line.replaceAll("\\s","");
+            if (!line.startsWith("//") && !line.startsWith("/*") && !line.startsWith("*")
+                    && !line.startsWith(API) && !line.startsWith(API_OPERATION)) {
+                continue;
+            }
+            line = line.replace("*","") .replace("/","");
             if (line.startsWith(API) || line.startsWith(API_OPERATION)) {
                 if (line.indexOf("(") > 0 && line.indexOf(")") - line.indexOf("(") > 3) {
                     String descParamValues = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
@@ -90,7 +96,7 @@ public abstract class AbstractParser {
                     }
                 }
             }
-            if (line.length() >0 && !line.startsWith("@")){
+            if (line.length() > 0 && !line.startsWith("@")) {
                 result.append(line);
             }
         }

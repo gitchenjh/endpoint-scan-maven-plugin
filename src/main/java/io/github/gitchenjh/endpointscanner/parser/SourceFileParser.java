@@ -1,9 +1,9 @@
-package io.github.gitchenjh.parser;
+package io.github.gitchenjh.endpointscanner.parser;
 
-import io.github.gitchenjh.constant.Constants;
-import io.github.gitchenjh.model.ControllerModel;
-import io.github.gitchenjh.model.EndpointModel;
-import io.github.gitchenjh.util.StringUtils;
+import io.github.gitchenjh.endpointscanner.constant.Constants;
+import io.github.gitchenjh.endpointscanner.model.ControllerModel;
+import io.github.gitchenjh.endpointscanner.model.EndpointModel;
+import io.github.gitchenjh.endpointscanner.util.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 
 import java.io.BufferedReader;
@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static io.github.gitchenjh.constant.Constants.LINE_BREAK;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.LINE_BREAK;
 
 /**
- * @author 陈精华
- * @since 2023-03-11
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public class SourceFileParser {
 
@@ -88,12 +88,12 @@ public class SourceFileParser {
                         clazz = clazz.split(" ")[0];
                         gotClazz = true;
                     }
-                    if ((line.startsWith("@") && !line.endsWith("{")) || line.startsWith("/**") || line.startsWith("//") || line.startsWith("*")
+                    if ((line.startsWith("@") && (!line.endsWith("{") || line.endsWith("({"))) || line.startsWith("/**") || line.startsWith("//") || line.startsWith("*")
                             // 排除 lambda 语法
-                            || line.matches("\\(+\\{+") || line.matches("\\}+\\)")) {
+                            || line.matches("\\(+\\{*\\(*") || line.matches(".*\\}+\\)")) {
                         continue;
                     }
-                    if ((line.contains("{") && !line.matches(Constants.OPEN_BRACE_ESCAPE)) || (line.contains("}") && !line.matches(Constants.CLOSE_BRACE_ESCAPE))) {
+                    if ((line.contains("{") && !line.matches(Constants.OPEN_BRACE_ESCAPE)) && (line.contains("}") && !line.matches(Constants.CLOSE_BRACE_ESCAPE))) {
                         // TODO 待优化 一行中有 {***} 或 } *** { 的情况
                         continue;
                     }
@@ -112,7 +112,7 @@ public class SourceFileParser {
                     }
                     if (line.contains("}") && !line.matches(Constants.CLOSE_BRACE_ESCAPE)) {
                         if (stack.empty()) {
-                            logger.warn("代码解析异常，代码块如下：\n" + stringBuffer.toString());
+                            logger.warn("Block code parse exception: \n" + stringBuffer.toString());
                         } else {
                             String codeBlock = stack.pop() + stringBuffer;
                             stringBuffer = new StringBuffer();
@@ -137,8 +137,11 @@ public class SourceFileParser {
                 }
             }
         } catch (IOException e) {
-            logger.error("找不到文件：" + file.getAbsolutePath(), e);
+            logger.error("Can not find file: " + file.getAbsolutePath(), e);
             throw new RuntimeException(e);
+        }
+        while (!stack.empty()) {
+            logger.warn("Block code parse exception: \n" + stack.pop());
         }
     }
 }

@@ -1,4 +1,4 @@
-package io.github.gitchenjh.util;
+package io.github.gitchenjh.endpointscanner.util;
 
 import org.apache.maven.plugin.logging.Log;
 
@@ -7,12 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static io.github.gitchenjh.constant.Constants.CONTROLLER;
-import static io.github.gitchenjh.constant.Constants.DOT_JAVA;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.DOT_JAVA;
 
 /**
- * @author 陈精华
- * @since 2023-03-11
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public class SourceFileUtil {
 
@@ -34,7 +33,7 @@ public class SourceFileUtil {
         if (!file.isDirectory()) {
             String fileName = file.getName();
             if (fileName.endsWith(DOT_JAVA)) {
-                logger.info("扫描到java文件：" + file.getAbsolutePath());
+                logger.debug("Found java source file: " + file.getAbsolutePath());
                 list.add(file);
             }
         } else {

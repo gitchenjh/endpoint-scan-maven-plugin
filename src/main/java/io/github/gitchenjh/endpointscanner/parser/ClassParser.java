@@ -1,20 +1,20 @@
-package io.github.gitchenjh.parser;
+package io.github.gitchenjh.endpointscanner.parser;
 
-import io.github.gitchenjh.model.ControllerModel;
+import io.github.gitchenjh.endpointscanner.model.ControllerModel;
 import org.apache.maven.plugin.logging.Log;
 
 import java.util.List;
 
-import static io.github.gitchenjh.constant.Constants.CONTROLLER;
-import static io.github.gitchenjh.constant.Constants.CONTROLLER_ESCAPE;
-import static io.github.gitchenjh.constant.Constants.REQUEST_MAPPING;
-import static io.github.gitchenjh.constant.Constants.REQUEST_MAPPING_ESCAPE;
-import static io.github.gitchenjh.constant.Constants.REST_CONTROLLER;
-import static io.github.gitchenjh.constant.Constants.REST_CONTROLLER_ESCAPE;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.CONTROLLER;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.CONTROLLER_ESCAPE;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.REQUEST_MAPPING;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.REQUEST_MAPPING_ESCAPE;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.REST_CONTROLLER;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.REST_CONTROLLER_ESCAPE;
 
 /**
- * @author 陈精华
- * @since 2023-03-11
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public class ClassParser extends AbstractParser {
 

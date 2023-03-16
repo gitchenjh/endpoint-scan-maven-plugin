@@ -1,16 +1,16 @@
-package io.github.gitchenjh.parser;
+package io.github.gitchenjh.endpointscanner.parser;
 
-import io.github.gitchenjh.model.ControllerModel;
+import io.github.gitchenjh.endpointscanner.model.ControllerModel;
 import org.apache.maven.plugin.logging.Log;
 
 import java.util.List;
 
-import static io.github.gitchenjh.constant.Constants.LINE_BREAK;
-import static io.github.gitchenjh.constant.Constants.REQUEST_MAPPING;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.LINE_BREAK;
+import static io.github.gitchenjh.endpointscanner.constant.Constants.REQUEST_MAPPING;
 
 /**
- * @author 陈精华
- * @since 2023-03-11
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public class ControllerParser extends AbstractParser {
 
@@ -22,7 +22,7 @@ public class ControllerParser extends AbstractParser {
 
     @Override
     public ControllerModel parse(String metaStr, String clazz, List<String> imports) {
-        logger.info("找到Controller：\n" + metaStr);
+        logger.debug("Found controller：\n" + metaStr);
         ControllerModel controllerModel = new ControllerModel();
         String[] lines = metaStr.split(LINE_BREAK);
         for (String line : lines) {

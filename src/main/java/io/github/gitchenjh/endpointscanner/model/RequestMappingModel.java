@@ -1,8 +1,8 @@
-package io.github.gitchenjh.model;
+package io.github.gitchenjh.endpointscanner.model;
 
 /**
- * @author 陈精华
- * @since 2023-03-12
+ * @author <a href="mailto:chenjh1993@qq.com">chenjh</a>
+ * @since 0.1.0
  */
 public class RequestMappingModel {
 
