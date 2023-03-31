@@ -50,7 +50,7 @@ public class EndpointScannerMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException {
 
         getLog().info("Scan endpoints start==================================");
-        getLog().info("Source directory：" + sourceDirectory);
+        getLog().info("Source directory: " + sourceDirectory);
 
         SourceFileUtil sourceFileUtil = new SourceFileUtil(getLog(), new File(sourceDirectory));
         List<File> sourceFileList = sourceFileUtil.getJavaSourceFile();
@@ -61,9 +61,13 @@ public class EndpointScannerMojo extends AbstractMojo {
             SourceFileParser sourceFileParser = new SourceFileParser(getLog());
             sourceFileParser.parse(sourceFile);
             List<ControllerModel> currentControllers = sourceFileParser.getControllerList();
-            if (currentControllers != null && !currentControllers.isEmpty() && currentControllers.get(0) != null
+            if (currentControllers != null
+                    && !currentControllers.isEmpty()
+                    && currentControllers.get(0) != null
                     && currentControllers.get(0).getEndpoints() != null
-                    && !currentControllers.get(0).getEndpoints().isEmpty() && currentControllers.get(0).getEndpoints().get(0) != null) {                List<EndpointModel> currentEndpoints = new ArrayList<>();
+                    && !currentControllers.get(0).getEndpoints().isEmpty()
+                    && currentControllers.get(0).getEndpoints().get(0) != null) {
+                List<EndpointModel> currentEndpoints = new ArrayList<>();
                 for (ControllerModel controllerModel : currentControllers) {
                     currentEndpoints.addAll(controllerModel.getEndpoints());
                 }
