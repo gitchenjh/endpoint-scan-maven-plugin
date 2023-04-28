@@ -1,6 +1,6 @@
 # endpoint-scan-maven-plugin
 
-A maven plugin to scan Controllers and Endpoints in your project
+A maven plugin to scan controllers and endpoints in your project
 
 ## Requirement
 
@@ -16,7 +16,7 @@ Add this plugin to `plugins` tag in your maven `pom.xml` file
 <plugin>
     <groupId>io.github.gitchenjh</groupId>
     <artifactId>endpoint-scan-maven-plugin</artifactId>
-    <version>0.1.0-ALPHA</version>
+    <version>0.1.1-ALPHA</version>
     <executions>
         <execution>
             <phase>process-classes</phase>
