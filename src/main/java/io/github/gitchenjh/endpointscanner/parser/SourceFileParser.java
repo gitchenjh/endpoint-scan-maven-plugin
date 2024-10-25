@@ -75,7 +75,7 @@ public class SourceFileParser {
             EndpointModel currentEndpoint = null;
             while ((line = reader.readLine()) != null) {
                 line = StringUtils.trim(line);
-                if ("".equals(line)) {
+                if (line.isEmpty()) {
                     continue;
                 }
                 if (!gotHead && !line.startsWith(IMPORT) && !line.startsWith(PACKAGE)) {
@@ -138,7 +138,7 @@ public class SourceFileParser {
                                 for (EndpointModel endpoint : endpointList) {
                                     endpoint.setPath(currentController.getPath() + endpoint.getPath());
                                 }
-                                if (endpointList.size() > 0) {
+                                if (!endpointList.isEmpty()) {
                                     currentController.setEndpoints(endpointList);
                                     endpointList = new ArrayList<>();
                                 }
